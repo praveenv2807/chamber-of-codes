@@ -450,6 +450,7 @@ export default function ChamberOfCodesArena() {
     role: "HOST" | "TEAM";
     teamId?: string;
   } | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [teams, setTeams] = useState<Team[]>(DEFAULT_TEAMS);
   const [loginRole, setLoginRole] = useState<"TEAM" | "HOST">("TEAM");
   const [selectedTeamId, setSelectedTeamId] = useState("team-gryf");
@@ -479,6 +480,18 @@ export default function ChamberOfCodesArena() {
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("chamber_user");
+      if (saved) {
+        setCurrentUser(JSON.parse(saved));
+      }
+    } catch {
+      // browser storage fallback
+    }
+    setIsLoaded(true);
+  }, []);
 
   const activeTeam = teams.find((t) => t.id === currentUser?.teamId);
   const currentRoundIndex = (activeTeam ? activeTeam.currentRound : 1) - 1;
@@ -534,7 +547,7 @@ export default function ChamberOfCodesArena() {
         supabase.removeChannel(eventSubscription);
       };
     } catch {
-      // Offline fallback
+      // offline fallback
     }
   }, []);
 
@@ -557,7 +570,7 @@ export default function ChamberOfCodesArena() {
         );
       }
     } catch {
-      // Keeps default teams
+      // keeps default teams if disconnected
     }
   };
 
@@ -577,7 +590,11 @@ export default function ChamberOfCodesArena() {
 
     if (loginRole === "HOST") {
       if (passwordInput === "admin@ksrce") {
-        setCurrentUser({ role: "HOST" });
+        const user = { role: "HOST" as const };
+        try {
+          localStorage.setItem("chamber_user", JSON.stringify(user));
+        } catch {}
+        setCurrentUser(user);
       } else {
         setAuthError("Invalid Master Admin Secret Key! (Default: admin@ksrce)");
       }
@@ -587,11 +604,22 @@ export default function ChamberOfCodesArena() {
         team &&
         (team.passkey === passwordInput || passwordInput === "gryf123")
       ) {
-        setCurrentUser({ role: "TEAM", teamId: team.id });
+        const user = { role: "TEAM" as const, teamId: team.id };
+        try {
+          localStorage.setItem("chamber_user", JSON.stringify(user));
+        } catch {}
+        setCurrentUser(user);
       } else {
         setAuthError("Invalid House Squad Passkey! (Try: gryf123, slyth123)");
       }
     }
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("chamber_user");
+    } catch {}
+    setCurrentUser(null);
   };
 
   const handleAnswerSubmit = async (e: React.FormEvent) => {
@@ -630,7 +658,7 @@ export default function ChamberOfCodesArena() {
           })
           .eq("id", currentUser.teamId);
       } catch {
-        // Safe fallback
+        // network sync safeguard
       }
 
       setActiveQuestion(null);
@@ -667,7 +695,7 @@ export default function ChamberOfCodesArena() {
           .update({ score: penalizedScore })
           .eq("id", currentUser.teamId);
       } catch {
-        // Safe fallback
+        // network sync safeguard
       }
 
       alert(
@@ -755,7 +783,7 @@ export default function ChamberOfCodesArena() {
         })
         .eq("id", currentUser.teamId);
     } catch {
-      // Safe fallback
+      // network sync safeguard
     }
 
     setIsHeavenDoorOpen(false);
@@ -766,6 +794,10 @@ export default function ChamberOfCodesArena() {
       triggerWinnerPopup(currentUser.teamId);
     }
   };
+
+  if (!isLoaded) {
+    return <div className="min-h-screen bg-slate-950" />;
+  }
 
   return (
     <div
@@ -863,7 +895,7 @@ export default function ChamberOfCodesArena() {
               </strong>
             </span>
             <button
-              onClick={() => setCurrentUser(null)}
+              onClick={handleLogout}
               className="text-xs bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/40 text-rose-300 px-3 py-1.5 rounded-lg transition"
             >
               Exit Arena
@@ -1205,7 +1237,6 @@ export default function ChamberOfCodesArena() {
                 </div>
               </div>
 
-              {/* SECTION B: 100% RELIABLE JIGSAW PUZZLE SLICES WITH <img> */}
               <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-800 gap-4 mb-6">
                   <div>
@@ -1285,7 +1316,6 @@ export default function ChamberOfCodesArena() {
                 )}
               </div>
 
-              {/* SECTION C: 3D REALISTIC POTION BOTTLE & DRAG INTO GATEWAY */}
               {isPuzzleSolved && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -1350,7 +1380,6 @@ export default function ChamberOfCodesArena() {
                 </motion.div>
               )}
 
-              {/* SECTION D: LIVE STANDINGS TABLE */}
               <div className="bg-slate-900/70 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-md">
                 <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
                   <div>
@@ -1444,7 +1473,6 @@ export default function ChamberOfCodesArena() {
         </main>
       )}
 
-      {/* MULTIPLE CHOICE QUESTION MODAL */}
       <AnimatePresence>
         {activeQuestion && (
           <motion.div
@@ -1532,7 +1560,6 @@ export default function ChamberOfCodesArena() {
                 )}
               </AnimatePresence>
 
-              {/* OPTIONS (A, B, C, D) */}
               <form onSubmit={handleAnswerSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {activeQuestion.options.map((opt) => (
