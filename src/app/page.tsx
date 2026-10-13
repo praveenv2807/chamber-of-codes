@@ -451,7 +451,7 @@ export default function ChamberOfCodesArena() {
     teamId?: string;
   } | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [teams, setTeams] = useState<Team[]>(DEFAULT_TEAMS);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loginRole, setLoginRole] = useState<"TEAM" | "HOST">("TEAM");
   const [selectedTeamId, setSelectedTeamId] = useState("team-gryf");
   const [passwordInput, setPasswordInput] = useState("");
@@ -578,16 +578,13 @@ export default function ChamberOfCodesArena() {
     let winner: Team | null = null;
 
     if (teamId) {
-      winner = teams.find((t) => t.id === teamId) || null;
-    }
-
-    // if not found in state, fetch directly from supabase
-    if (!winner && teamId) {
+      // 1. Fetch the exact winning team by ID directly from Supabase
       const { data } = await supabase
         .from("teams")
         .select("*")
         .eq("id", teamId)
-        .single();
+        .maybeSingle();
+
       if (data) {
         winner = {
           id: data.id,
@@ -600,7 +597,7 @@ export default function ChamberOfCodesArena() {
       }
     }
 
-    // if still null, fetch the actual highest scorer from db
+    // 2. If no valid team found yet, fetch whoever holds the absolute highest points in Supabase
     if (!winner) {
       const { data } = await supabase
         .from("teams")
@@ -622,6 +619,7 @@ export default function ChamberOfCodesArena() {
       }
     }
 
+    // 3. Display the actual live champion modal
     if (winner) {
       setWinnerModal({ open: true, team: winner });
       confetti({
@@ -1135,31 +1133,30 @@ export default function ChamberOfCodesArena() {
                     whileTap={{ scale: 0.95 }}
                     onClick={async () => {
                       try {
-                        const { data: freshTeams } = await supabase
+                        // Query database for the highest scorer at this exact millisecond
+                        const { data: topRecords } = await supabase
                           .from("teams")
                           .select("*")
                           .order("score", { ascending: false })
                           .order("current_round", { ascending: false })
                           .limit(1);
 
-                        const topTeam =
-                          freshTeams && freshTeams.length > 0
-                            ? freshTeams[0]
-                            : null;
-                        const topId = topTeam ? topTeam.id : teams[0]?.id;
+                        if (topRecords && topRecords.length > 0) {
+                          const realChampion = topRecords[0];
 
-                        if (topId) {
+                          // Broadcast champion ID to all connected devices
                           await supabase.from("event_state").upsert({
                             id: 1,
                             winner_announced: true,
-                            winning_team_id: topId,
+                            winning_team_id: realChampion.id,
                             updated_at: new Date().toISOString(),
                           });
 
-                          await triggerWinnerPopup(topId);
+                          // Trigger immediately on host screen
+                          await triggerWinnerPopup(realChampion.id);
                         }
-                      } catch {
-                        await triggerWinnerPopup();
+                      } catch (err) {
+                        console.error("Error broadcasting winner:", err);
                       }
                     }}
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-serif font-black rounded-xl text-sm transition shadow-lg shadow-amber-500/30"
