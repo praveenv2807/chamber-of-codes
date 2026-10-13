@@ -3,7 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Chamber of Codes | CSE - KSR College of Engineering",
+  title: "Chamber of Codes C-WIZ | CSE - C - KSR College of Engineering",
   description: "Gamified C Operator Arena with Harry Potter Dark Magic Theme",
 };
 
