@@ -1045,7 +1045,7 @@ export default function ChamberOfCodesArena() {
                   onChange={(e) => setPasswordInput(e.target.value)}
                   placeholder={
                     loginRole === "HOST"
-                      ? "admin@ksrce"
+                      ? "admin@ksrc"
                       : "Enter passkey (e.g. gryf123)"
                   }
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm font-mono text-slate-100 focus:outline-none focus:border-amber-400"
