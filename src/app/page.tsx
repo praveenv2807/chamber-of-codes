@@ -574,14 +574,35 @@ export default function ChamberOfCodesArena() {
     }
   };
 
-  const triggerWinnerPopup = (teamId: string) => {
-    const winner = teams.find((t) => t.id === teamId) || teams[0];
-    setWinnerModal({ open: true, team: winner });
-    confetti({
-      particleCount: 250,
-      spread: 140,
-      origin: { y: 0.5 },
-    });
+  const triggerWinnerPopup = async (teamId: string) => {
+    let winner = teams.find((t) => t.id === teamId);
+
+    if (!winner) {
+      const { data } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", teamId)
+        .single();
+      if (data) {
+        winner = {
+          id: data.id,
+          name: data.name,
+          passkey: data.passkey,
+          score: data.score,
+          currentRound: data.current_round || 1,
+          unlockedTiles: data.unlocked_tiles || [],
+        };
+      }
+    }
+
+    if (winner) {
+      setWinnerModal({ open: true, team: winner });
+      confetti({
+        particleCount: 250,
+        spread: 140,
+        origin: { y: 0.5 },
+      });
+    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -1086,20 +1107,39 @@ export default function ChamberOfCodesArena() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={async () => {
-                      const top = [...teams].sort(
-                        (a, b) => b.score - a.score,
-                      )[0];
-                      if (!top) return;
-
                       try {
+                        // 1. Fetch fresh standings directly from Supabase ordered by highest score
+                        const { data: freshTeams, error } = await supabase
+                          .from("teams")
+                          .select("*")
+                          .order("score", { ascending: false })
+                          .order("current_round", { ascending: false });
+
+                        if (error || !freshTeams || freshTeams.length === 0) {
+                          // Fallback to local state if fetch fails
+                          const localTop = [...teams].sort(
+                            (a, b) =>
+                              b.score - a.score ||
+                              b.currentRound - a.currentRound,
+                          )[0];
+                          if (localTop) triggerWinnerPopup(localTop.id);
+                          return;
+                        }
+
+                        const topTeam = freshTeams[0];
+
+                        // 2. Broadcast the highest scoring team to all connected screens
                         await supabase.from("event_state").upsert({
                           id: 1,
                           winner_announced: true,
-                          winning_team_id: top.id,
+                          winning_team_id: topTeam.id,
                           updated_at: new Date().toISOString(),
                         });
-                      } catch {
-                        triggerWinnerPopup(top.id);
+
+                        // 3. Trigger locally for the host as well
+                        triggerWinnerPopup(topTeam.id);
+                      } catch (err) {
+                        console.error("Error announcing winner:", err);
                       }
                     }}
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-serif font-black rounded-xl text-sm transition shadow-lg shadow-amber-500/30"
