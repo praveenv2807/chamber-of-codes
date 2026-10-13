@@ -889,7 +889,9 @@ export default function ChamberOfCodesArena() {
             <span className="text-xs px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-mono">
               Squad:{" "}
               <strong>
-                {currentUser.role === "HOST" ? "Master Host" : activeTeam?.name}
+                {currentUser.role === "HOST"
+                  ? "Master Host"
+                  : activeTeam?.name}
               </strong>
             </span>
             <button
