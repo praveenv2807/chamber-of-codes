@@ -589,28 +589,28 @@ export default function ChamberOfCodesArena() {
     setAuthError("");
 
     if (loginRole === "HOST") {
-      if (passwordInput === "admin@ksrce") {
+      const validAdminSecret =
+        process.env.NEXT_PUBLIC_ADMIN_SECRET || "admin@ksrce";
+
+      if (passwordInput === validAdminSecret) {
         const user = { role: "HOST" as const };
         try {
           localStorage.setItem("chamber_user", JSON.stringify(user));
         } catch {}
         setCurrentUser(user);
       } else {
-        setAuthError("Invalid Master Admin Secret Key! (Default: admin@ksrce)");
+        setAuthError("Invalid Master Admin Secret Key");
       }
     } else {
       const team = teams.find((t) => t.id === selectedTeamId);
-      if (
-        team &&
-        (team.passkey === passwordInput || passwordInput === "gryf123")
-      ) {
+      if (team && team.passkey === passwordInput) {
         const user = { role: "TEAM" as const, teamId: team.id };
         try {
           localStorage.setItem("chamber_user", JSON.stringify(user));
         } catch {}
         setCurrentUser(user);
       } else {
-        setAuthError("Invalid House Squad Passkey! (Try: gryf123, slyth123)");
+        setAuthError("Invalid House Squad Passkey");
       }
     }
   };
@@ -889,9 +889,7 @@ export default function ChamberOfCodesArena() {
             <span className="text-xs px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-mono">
               Squad:{" "}
               <strong>
-                {currentUser.role === "HOST"
-                  ? "Master Host (Admin)"
-                  : activeTeam?.name}
+                {currentUser.role === "HOST" ? "Master Host" : activeTeam?.name}
               </strong>
             </span>
             <button
@@ -1028,8 +1026,7 @@ export default function ChamberOfCodesArena() {
                 </div>
               ) : (
                 <div className="p-3 bg-indigo-950/40 border border-indigo-800/40 rounded-xl text-xs text-indigo-300">
-                  Organizer command: Live scoreboard & winner announcement
-                  trigger.
+                  Organizer command deck: live scoreboard & winner announcement.
                 </div>
               )}
 
@@ -1045,8 +1042,8 @@ export default function ChamberOfCodesArena() {
                   onChange={(e) => setPasswordInput(e.target.value)}
                   placeholder={
                     loginRole === "HOST"
-                      ? "admin@ksrc"
-                      : "Enter passkey (e.g. gryf123)"
+                      ? "Enter host secret key"
+                      : "Enter squad passkey"
                   }
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm font-mono text-slate-100 focus:outline-none focus:border-amber-400"
                   required
