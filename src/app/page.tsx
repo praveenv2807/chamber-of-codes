@@ -889,9 +889,7 @@ export default function ChamberOfCodesArena() {
             <span className="text-xs px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-mono">
               Squad:{" "}
               <strong>
-                {currentUser.role === "HOST"
-                  ? "Master Host"
-                  : activeTeam?.name}
+                {currentUser.role === "HOST" ? "Master Host" : activeTeam?.name}
               </strong>
             </span>
             <button
@@ -1087,11 +1085,22 @@ export default function ChamberOfCodesArena() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => {
+                    onClick={async () => {
                       const top = [...teams].sort(
                         (a, b) => b.score - a.score,
                       )[0];
-                      triggerWinnerPopup(top.id);
+                      if (!top) return;
+
+                      try {
+                        await supabase.from("event_state").upsert({
+                          id: 1,
+                          winner_announced: true,
+                          winning_team_id: top.id,
+                          updated_at: new Date().toISOString(),
+                        });
+                      } catch {
+                        triggerWinnerPopup(top.id);
+                      }
                     }}
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-serif font-black rounded-xl text-sm transition shadow-lg shadow-amber-500/30"
                   >
