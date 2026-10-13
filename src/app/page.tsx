@@ -574,10 +574,15 @@ export default function ChamberOfCodesArena() {
     }
   };
 
-  const triggerWinnerPopup = async (teamId: string) => {
-    let winner = teams.find((t) => t.id === teamId);
+  const triggerWinnerPopup = async (teamId?: string) => {
+    let winner: Team | null = null;
 
-    if (!winner) {
+    if (teamId) {
+      winner = teams.find((t) => t.id === teamId) || null;
+    }
+
+    // if not found in state, fetch directly from supabase
+    if (!winner && teamId) {
       const { data } = await supabase
         .from("teams")
         .select("*")
@@ -591,6 +596,28 @@ export default function ChamberOfCodesArena() {
           score: data.score,
           currentRound: data.current_round || 1,
           unlockedTiles: data.unlocked_tiles || [],
+        };
+      }
+    }
+
+    // if still null, fetch the actual highest scorer from db
+    if (!winner) {
+      const { data } = await supabase
+        .from("teams")
+        .select("*")
+        .order("score", { ascending: false })
+        .order("current_round", { ascending: false })
+        .limit(1);
+
+      if (data && data.length > 0) {
+        const top = data[0];
+        winner = {
+          id: top.id,
+          name: top.name,
+          passkey: top.passkey,
+          score: top.score,
+          currentRound: top.current_round || 1,
+          unlockedTiles: top.unlocked_tiles || [],
         };
       }
     }
@@ -1108,38 +1135,31 @@ export default function ChamberOfCodesArena() {
                     whileTap={{ scale: 0.95 }}
                     onClick={async () => {
                       try {
-                        // 1. Fetch fresh standings directly from Supabase ordered by highest score
-                        const { data: freshTeams, error } = await supabase
+                        const { data: freshTeams } = await supabase
                           .from("teams")
                           .select("*")
                           .order("score", { ascending: false })
-                          .order("current_round", { ascending: false });
+                          .order("current_round", { ascending: false })
+                          .limit(1);
 
-                        if (error || !freshTeams || freshTeams.length === 0) {
-                          // Fallback to local state if fetch fails
-                          const localTop = [...teams].sort(
-                            (a, b) =>
-                              b.score - a.score ||
-                              b.currentRound - a.currentRound,
-                          )[0];
-                          if (localTop) triggerWinnerPopup(localTop.id);
-                          return;
+                        const topTeam =
+                          freshTeams && freshTeams.length > 0
+                            ? freshTeams[0]
+                            : null;
+                        const topId = topTeam ? topTeam.id : teams[0]?.id;
+
+                        if (topId) {
+                          await supabase.from("event_state").upsert({
+                            id: 1,
+                            winner_announced: true,
+                            winning_team_id: topId,
+                            updated_at: new Date().toISOString(),
+                          });
+
+                          await triggerWinnerPopup(topId);
                         }
-
-                        const topTeam = freshTeams[0];
-
-                        // 2. Broadcast the highest scoring team to all connected screens
-                        await supabase.from("event_state").upsert({
-                          id: 1,
-                          winner_announced: true,
-                          winning_team_id: topTeam.id,
-                          updated_at: new Date().toISOString(),
-                        });
-
-                        // 3. Trigger locally for the host as well
-                        triggerWinnerPopup(topTeam.id);
-                      } catch (err) {
-                        console.error("Error announcing winner:", err);
+                      } catch {
+                        await triggerWinnerPopup();
                       }
                     }}
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-serif font-black rounded-xl text-sm transition shadow-lg shadow-amber-500/30"
