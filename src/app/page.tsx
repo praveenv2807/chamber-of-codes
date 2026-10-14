@@ -10,11 +10,8 @@ import {
   Sparkles,
   Crown,
   Lock,
-  RefreshCw,
   CheckCircle2,
-  Play,
   AlertCircle,
-  Wand2,
   Flame,
   ArrowRight,
   Check,
@@ -23,6 +20,7 @@ import {
   Compass,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import HeavenDoorPortal from "@/components/HeavenDoorPortal";
 import {
   ROUNDS_DATA,
   RoundConfig,
@@ -38,41 +36,6 @@ interface Team {
   currentRound: number;
   unlockedTiles: number[];
 }
-
-const DEFAULT_TEAMS: Team[] = [
-  {
-    id: "team-gryf",
-    name: "Gryffindor Coders",
-    passkey: "gryf123",
-    score: 0,
-    currentRound: 1,
-    unlockedTiles: [],
-  },
-  {
-    id: "team-slyth",
-    name: "Slytherin Hackers",
-    passkey: "slyth123",
-    score: 0,
-    currentRound: 1,
-    unlockedTiles: [],
-  },
-  {
-    id: "team-raven",
-    name: "Ravenclaw Logic",
-    passkey: "raven123",
-    score: 0,
-    currentRound: 1,
-    unlockedTiles: [],
-  },
-  {
-    id: "team-huff",
-    name: "Hufflepuff Loops",
-    passkey: "huff123",
-    score: 0,
-    currentRound: 1,
-    unlockedTiles: [],
-  },
-];
 
 function getShuffledQuestionsForTeam(
   questions: RoundQuestion[],
@@ -303,148 +266,6 @@ function PotionBottle({
   );
 }
 
-function HeavenDoorPortal({
-  isOpen,
-  onAnimationComplete,
-  nextWorldName,
-  nextRoundNumber,
-  videoBg,
-}: {
-  isOpen: boolean;
-  onAnimationComplete: () => void;
-  nextWorldName: string;
-  nextRoundNumber: number;
-  videoBg: string;
-}) {
-  const [stage, setStage] = useState<"closed" | "bursting" | "entered">(
-    "closed",
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      setStage("bursting");
-
-      confetti({
-        particleCount: 200,
-        spread: 160,
-        origin: { y: 0.4 },
-        colors: ["#f59e0b", "#fbbf24", "#fef08a", "#ffffff", "#dc2626"],
-      });
-
-      const timer = setTimeout(() => {
-        setStage("entered");
-      }, 4500);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black"
-      >
-        <div className="absolute inset-0 z-0">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover brightness-110 saturate-150 contrast-125"
-          >
-            <source src={videoBg} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-amber-950/40 to-yellow-500/20 mix-blend-color-dodge" />
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{
-            opacity: stage === "bursting" ? [0, 1, 0.8] : 0.3,
-            scale: [0.8, 1.4, 1.2],
-            rotate: [0, 15, -15, 0],
-          }}
-          transition={{ duration: 3.5, ease: "easeOut" }}
-          className="absolute z-10 w-[140vw] h-[140vh] pointer-events-none flex items-center justify-center"
-        >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-200 via-amber-500/50 to-transparent blur-3xl opacity-80" />
-        </motion.div>
-
-        <div className="relative z-20 w-full max-w-4xl h-[85vh] flex perspective-1000 items-center justify-center">
-          <motion.div
-            initial={{ rotateY: 0 }}
-            animate={{
-              rotateY: stage === "bursting" || stage === "entered" ? -110 : 0,
-            }}
-            transition={{ duration: 3.2, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: "left center" }}
-            className="w-1/2 h-full bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 border-4 border-amber-600/70 rounded-l-3xl shadow-[0_0_80px_rgba(0,0,0,0.9)] relative flex flex-col justify-between p-8 overflow-hidden backface-hidden"
-          >
-            <div className="h-4 bg-amber-700/60 rounded-full border border-amber-400 shadow-md" />
-            <div className="h-4 bg-amber-700/60 rounded-full border border-amber-400 shadow-md" />
-            <div className="h-4 bg-amber-700/60 rounded-full border border-amber-400 shadow-md" />
-
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-4 border-amber-400 bg-amber-600 shadow-lg" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-yellow-400/40 pointer-events-none" />
-          </motion.div>
-
-          <motion.div
-            initial={{ rotateY: 0 }}
-            animate={{
-              rotateY: stage === "bursting" || stage === "entered" ? 110 : 0,
-            }}
-            transition={{ duration: 3.2, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: "right center" }}
-            className="w-1/2 h-full bg-gradient-to-l from-stone-900 via-amber-950 to-stone-900 border-4 border-amber-600/70 rounded-r-3xl shadow-[0_0_80px_rgba(0,0,0,0.9)] relative flex flex-col justify-between p-8 overflow-hidden backface-hidden"
-          >
-            <div className="h-4 bg-amber-700/60 rounded-full border border-amber-400 shadow-md" />
-            <div className="h-4 bg-amber-700/60 rounded-full border border-amber-400 shadow-md" />
-            <div className="h-4 bg-amber-700/60 rounded-full border border-amber-400 shadow-md" />
-
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-4 border-amber-400 bg-amber-600 shadow-lg" />
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-amber-500/10 to-yellow-400/40 pointer-events-none" />
-          </motion.div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.7, y: 50 }}
-          animate={{
-            opacity: stage === "entered" ? 1 : 0,
-            scale: stage === "entered" ? 1 : 0.7,
-            y: stage === "entered" ? 0 : 50,
-          }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="absolute z-30 max-w-xl w-full p-8 text-center bg-slate-950/80 border-2 border-amber-400 backdrop-blur-xl rounded-3xl shadow-[0_0_100px_rgba(245,158,11,0.6)]"
-        >
-          <Sparkles className="w-14 h-14 text-amber-300 mx-auto mb-3 animate-spin" />
-          <div className="text-xs font-mono uppercase tracking-[0.3em] text-amber-400 font-bold">
-            Portal Gateway Unlocked
-          </div>
-          <h2 className="text-3xl md:text-4xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-100 my-2">
-            Entering: {nextWorldName}
-          </h2>
-          <p className="text-sm font-mono text-slate-300 mb-6">
-            The ancient palace seals have shattered. You have unlocked Round{" "}
-            {nextRoundNumber}!
-          </p>
-
-          <button
-            onClick={onAnimationComplete}
-            className="px-8 py-3.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-serif font-black rounded-xl text-base transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(245,158,11,0.5)] flex items-center gap-2 mx-auto"
-          >
-            Step Into {nextWorldName} <ArrowRight className="w-5 h-5" />
-          </button>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
 export default function ChamberOfCodesArena() {
   const [currentUser, setCurrentUser] = useState<{
     role: "HOST" | "TEAM";
@@ -453,7 +274,7 @@ export default function ChamberOfCodesArena() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loginRole, setLoginRole] = useState<"TEAM" | "HOST">("TEAM");
-  const [selectedTeamId, setSelectedTeamId] = useState("team-gryf");
+  const [selectedTeamId, setSelectedTeamId] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
 
@@ -462,6 +283,9 @@ export default function ChamberOfCodesArena() {
   );
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [showHint, setShowHint] = useState(false);
+  const [usedHintQuestions, setUsedHintQuestions] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTransitioningRound, setIsTransitioningRound] = useState(false);
 
   const [puzzleOrder, setPuzzleOrder] = useState<number[]>([2, 5, 0, 4, 1, 3]);
   const [draggedTileIndex, setDraggedTileIndex] = useState<number | null>(null);
@@ -487,9 +311,7 @@ export default function ChamberOfCodesArena() {
       if (saved) {
         setCurrentUser(JSON.parse(saved));
       }
-    } catch {
-      // browser storage fallback
-    }
+    } catch {}
     setIsLoaded(true);
   }, []);
 
@@ -546,9 +368,7 @@ export default function ChamberOfCodesArena() {
         supabase.removeChannel(teamsSubscription);
         supabase.removeChannel(eventSubscription);
       };
-    } catch {
-      // offline fallback
-    }
+    } catch {}
   }, []);
 
   const fetchTeams = async () => {
@@ -568,17 +388,17 @@ export default function ChamberOfCodesArena() {
             unlockedTiles: d.unlocked_tiles || [],
           })),
         );
+        if (!selectedTeamId) {
+          setSelectedTeamId(data[0].id);
+        }
       }
-    } catch {
-      // keeps default teams if disconnected
-    }
+    } catch {}
   };
 
   const triggerWinnerPopup = async (teamId?: string) => {
     let winner: Team | null = null;
 
     if (teamId) {
-      // 1. Fetch the exact winning team by ID directly from Supabase
       const { data } = await supabase
         .from("teams")
         .select("*")
@@ -597,7 +417,6 @@ export default function ChamberOfCodesArena() {
       }
     }
 
-    // 2. If no valid team found yet, fetch whoever holds the absolute highest points in Supabase
     if (!winner) {
       const { data } = await supabase
         .from("teams")
@@ -619,7 +438,6 @@ export default function ChamberOfCodesArena() {
       }
     }
 
-    // 3. Display the actual live champion modal
     if (winner) {
       setWinnerModal({ open: true, team: winner });
       confetti({
@@ -668,10 +486,50 @@ export default function ChamberOfCodesArena() {
     setCurrentUser(null);
   };
 
+  const handleTriggerHint = async () => {
+    if (!activeQuestion || !currentUser?.teamId) return;
+
+    if (!showHint) {
+      setShowHint(true);
+
+      if (!usedHintQuestions.includes(activeQuestion.id)) {
+        setUsedHintQuestions((prev) => [...prev, activeQuestion.id]);
+
+        const targetTeam = teams.find((t) => t.id === currentUser.teamId);
+        const newScore = Math.max(0, (targetTeam?.score || 0) - 1);
+
+        setTeams((prev) =>
+          prev.map((t) => {
+            if (t.id === currentUser.teamId) {
+              return { ...t, score: newScore };
+            }
+            return t;
+          }),
+        );
+
+        try {
+          await supabase
+            .from("teams")
+            .update({ score: newScore })
+            .eq("id", currentUser.teamId);
+        } catch {}
+      }
+    } else {
+      setShowHint(false);
+    }
+  };
+
   const handleAnswerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeQuestion || !currentUser?.teamId || !selectedOption) return;
+    if (
+      !activeQuestion ||
+      !currentUser?.teamId ||
+      !selectedOption ||
+      isSubmitting
+    )
+      return;
 
+    setIsSubmitting(true);
     const isCorrect =
       selectedOption.toUpperCase() ===
       activeQuestion.expectedAnswer.toUpperCase();
@@ -703,13 +561,12 @@ export default function ChamberOfCodesArena() {
             unlocked_tiles: updatedTiles,
           })
           .eq("id", currentUser.teamId);
-      } catch {
-        // network sync safeguard
-      }
+      } catch {}
 
       setActiveQuestion(null);
       setSelectedOption("");
       setShowHint(false);
+      setIsSubmitting(false);
     } else {
       if (containerRef.current) {
         gsap
@@ -740,14 +597,13 @@ export default function ChamberOfCodesArena() {
           .from("teams")
           .update({ score: penalizedScore })
           .eq("id", currentUser.teamId);
-      } catch {
-        // network sync safeguard
-      }
+      } catch {}
 
       alert(
         `Incorrect! Option ${selectedOption} is wrong. Professor Snape deducts 5 points from your house!`,
       );
       setSelectedOption("");
+      setIsSubmitting(false);
     }
   };
 
@@ -797,30 +653,40 @@ export default function ChamberOfCodesArena() {
   };
 
   const handlePotionDrop = () => {
+    setIsTransitioningRound(false);
     setIsHeavenDoorOpen(true);
   };
 
   const handleDoorTransitionComplete = async () => {
-    if (!currentUser?.teamId) return;
+    if (!currentUser?.teamId || isTransitioningRound) return;
 
-    const nextRound = Math.min(currentRoundConfig.roundNumber + 1, 7);
-    const targetTeam = teams.find((t) => t.id === currentUser.teamId);
-    const bonusScore = (targetTeam?.score || 0) + 50;
-
-    setTeams((prev) =>
-      prev.map((t) => {
-        if (t.id === currentUser.teamId) {
-          return {
-            ...t,
-            currentRound: nextRound,
-            score: bonusScore,
-          };
-        }
-        return t;
-      }),
-    );
+    setIsTransitioningRound(true);
 
     try {
+      const { data: teamData } = await supabase
+        .from("teams")
+        .select("current_round, score")
+        .eq("id", currentUser.teamId)
+        .single();
+
+      const currentRoundInDb =
+        teamData?.current_round || activeTeam?.currentRound || 1;
+      const nextRound = Math.min(currentRoundInDb + 1, 7);
+      const bonusScore = (teamData?.score ?? activeTeam?.score ?? 0) + 50;
+
+      setTeams((prev) =>
+        prev.map((t) => {
+          if (t.id === currentUser.teamId) {
+            return {
+              ...t,
+              currentRound: nextRound,
+              score: bonusScore,
+            };
+          }
+          return t;
+        }),
+      );
+
       await supabase
         .from("teams")
         .update({
@@ -828,30 +694,28 @@ export default function ChamberOfCodesArena() {
           score: bonusScore,
         })
         .eq("id", currentUser.teamId);
-    } catch {
-      // network sync safeguard
-    }
 
-    setIsHeavenDoorOpen(false);
-    setIsPuzzleSolved(false);
-    setPuzzleOrder([2, 5, 0, 4, 1, 3]);
+      setIsHeavenDoorOpen(false);
+      setIsPuzzleSolved(false);
+      setPuzzleOrder([2, 5, 0, 4, 1, 3]);
 
-    if (currentRoundConfig.roundNumber === 7) {
-      triggerWinnerPopup(currentUser.teamId);
+      if (currentRoundInDb >= 7) {
+        triggerWinnerPopup(currentUser.teamId);
+      }
+    } finally {
+      setTimeout(() => {
+        setIsTransitioningRound(false);
+      }, 500);
     }
   };
 
   if (!isLoaded) {
-    return <div className="min-h-screen bg-slate-950" />;
+    return <div className="min-h-screen bg-[#070b14]" />;
   }
 
-  return (
-    <div
-      ref={containerRef}
-      className={`min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans transition-colors duration-700 relative overflow-x-hidden ${
-        isGrannyCursed ? "bg-rose-950/80" : ""
-      }`}
-    >
+  // When door is opened, show only the full-screen door animation
+  if (isHeavenDoorOpen) {
+    return (
       <HeavenDoorPortal
         isOpen={isHeavenDoorOpen}
         onAnimationComplete={handleDoorTransitionComplete}
@@ -859,10 +723,26 @@ export default function ChamberOfCodesArena() {
         nextRoundNumber={Math.min(currentRoundConfig.roundNumber + 1, 7)}
         videoBg={currentRoundConfig.worldVideoBg}
       />
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={`min-h-screen text-slate-100 flex flex-col font-sans transition-colors duration-700 relative overflow-x-hidden ${
+        isGrannyCursed ? "bg-rose-950/80" : "bg-transparent"
+      }`}
+    >
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+        style={{ backgroundImage: "url('/puzzles/background.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
+      </div>
 
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
-          className={`absolute inset-0 bg-gradient-to-b ${currentRoundConfig.themeColor} opacity-50 transition-colors duration-1000`}
+          className={`absolute inset-0 bg-gradient-to-b ${currentRoundConfig.themeColor} opacity-20 transition-colors duration-1000`}
         />
         <div className="absolute top-0 -left-40 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse" />
         <div className="absolute bottom-10 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-[140px] pointer-events-none" />
@@ -911,16 +791,16 @@ export default function ChamberOfCodesArena() {
         )}
       </AnimatePresence>
 
-      <header className="relative z-40 border-b border-amber-500/20 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+      <header className="relative z-40 border-b border-amber-500/20 bg-[#070b14]/70 backdrop-blur-md px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ scale: 1.1, rotate: 10 }}
-            className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20"
+            className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 flex items-center justify-center text-slate-950 shadow-lg shadow-pink-500/20"
           >
             <Sparkles className="w-5 h-5 text-white" />
           </motion.div>
           <div>
-            <h1 className="font-serif font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-300 to-amber-100">
+            <h1 className="font-serif font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-300 to-amber-100 tracking-wide">
               CHAMBER OF CODES
             </h1>
             <p className="text-[11px] text-amber-500/80 font-mono">
@@ -932,7 +812,7 @@ export default function ChamberOfCodesArena() {
 
         {currentUser && (
           <div className="flex items-center gap-3">
-            <span className="text-xs px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-mono">
+            <span className="text-xs px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-mono">
               Squad:{" "}
               <strong>
                 {currentUser.role === "HOST" ? "Master Host" : activeTeam?.name}
@@ -940,7 +820,7 @@ export default function ChamberOfCodesArena() {
             </span>
             <button
               onClick={handleLogout}
-              className="text-xs bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/40 text-rose-300 px-3 py-1.5 rounded-lg transition"
+              className="text-xs bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/40 text-rose-300 px-3.5 py-1.5 rounded-lg transition cursor-pointer"
             >
               Exit Arena
             </button>
@@ -986,14 +866,14 @@ export default function ChamberOfCodesArena() {
                     Palaces Conquered
                   </div>
                   <div className="text-3xl font-mono font-bold text-emerald-400">
-                    7 / 7
+                    Round {winnerModal.team.currentRound} / 7
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={() => setWinnerModal({ open: false, team: null })}
-                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-serif font-bold py-3 rounded-xl transition shadow-lg shadow-amber-500/20"
+                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-serif font-bold py-3 rounded-xl transition shadow-lg shadow-amber-500/20 cursor-pointer"
               >
                 Close Victory Scroll
               </button>
@@ -1007,7 +887,7 @@ export default function ChamberOfCodesArena() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md bg-slate-900/90 border border-amber-500/40 p-8 rounded-3xl shadow-2xl backdrop-blur-xl"
+            className="w-full max-w-md bg-[#0a0f1d]/90 border border-amber-500/40 p-8 rounded-3xl shadow-2xl backdrop-blur-xl"
           >
             <div className="text-center mb-6">
               <Castle className="w-10 h-10 text-amber-400 mx-auto mb-2 animate-pulse" />
@@ -1026,7 +906,7 @@ export default function ChamberOfCodesArena() {
                   setLoginRole("TEAM");
                   setAuthError("");
                 }}
-                className={`flex-1 py-2 text-sm font-medium border-b-2 transition ${loginRole === "TEAM" ? "border-amber-400 text-amber-400 font-bold" : "border-transparent text-slate-400"}`}
+                className={`flex-1 py-2 text-sm font-medium border-b-2 transition cursor-pointer ${loginRole === "TEAM" ? "border-amber-400 text-amber-400 font-bold" : "border-transparent text-slate-400"}`}
               >
                 House Squad Login
               </button>
@@ -1035,7 +915,7 @@ export default function ChamberOfCodesArena() {
                   setLoginRole("HOST");
                   setAuthError("");
                 }}
-                className={`flex-1 py-2 text-sm font-medium border-b-2 transition ${loginRole === "HOST" ? "border-amber-400 text-amber-400 font-bold" : "border-transparent text-slate-400"}`}
+                className={`flex-1 py-2 text-sm font-medium border-b-2 transition cursor-pointer ${loginRole === "HOST" ? "border-amber-400 text-amber-400 font-bold" : "border-transparent text-slate-400"}`}
               >
                 Master Host Login
               </button>
@@ -1057,15 +937,15 @@ export default function ChamberOfCodesArena() {
                   <select
                     value={selectedTeamId}
                     onChange={(e) => setSelectedTeamId(e.target.value)}
-                    className="w-full bg-slate-950 border border-amber-500/40 rounded-xl p-3 text-sm text-amber-100 font-medium focus:outline-none focus:border-amber-400 cursor-pointer"
+                    className="w-full bg-[#050811] border border-amber-500/40 rounded-xl p-3 text-sm text-amber-100 font-medium focus:outline-none focus:border-amber-400 cursor-pointer"
                   >
                     {teams.map((t: Team) => (
                       <option
                         key={t.id}
                         value={t.id}
-                        className="bg-slate-950 text-amber-100 py-1"
+                        className="bg-[#050811] text-amber-100 py-1"
                       >
-                        {t.name} (Round {t.currentRound})
+                        {t.name}
                       </option>
                     ))}
                   </select>
@@ -1091,7 +971,7 @@ export default function ChamberOfCodesArena() {
                       ? "Enter host secret key"
                       : "Enter squad passkey"
                   }
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm font-mono text-slate-100 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#050811] border border-slate-700 rounded-xl p-3 text-sm font-mono text-slate-100 focus:outline-none focus:border-amber-400"
                   required
                 />
               </div>
@@ -1100,7 +980,7 @@ export default function ChamberOfCodesArena() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full mt-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-serif font-bold py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20"
+                className="w-full mt-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-serif font-bold py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20 cursor-pointer"
               >
                 {loginRole === "HOST"
                   ? "Enter Host Command Deck"
@@ -1115,25 +995,25 @@ export default function ChamberOfCodesArena() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-900/90 border border-amber-500/40 p-6 rounded-3xl shadow-2xl"
+              className="bg-[#0b1325]/85 border border-amber-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-md relative"
             >
-              <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 gap-4">
                 <div>
-                  <h2 className="text-xl font-serif font-bold text-amber-400 flex items-center gap-2">
-                    <Shield className="w-5 h-5" /> Host Command Deck
+                  <h2 className="text-2xl font-serif font-black text-amber-400 flex items-center gap-2 tracking-wide">
+                    <Shield className="w-6 h-6 text-amber-400" /> Host Command
+                    Deck
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 mt-1 font-sans">
                     Monitoring all 7 Hogwarts Palace Trials
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={async () => {
                       try {
-                        // Query database for the highest scorer at this exact millisecond
                         const { data: topRecords } = await supabase
                           .from("teams")
                           .select("*")
@@ -1144,7 +1024,6 @@ export default function ChamberOfCodesArena() {
                         if (topRecords && topRecords.length > 0) {
                           const realChampion = topRecords[0];
 
-                          // Broadcast champion ID to all connected devices
                           await supabase.from("event_state").upsert({
                             id: 1,
                             winner_announced: true,
@@ -1152,45 +1031,50 @@ export default function ChamberOfCodesArena() {
                             updated_at: new Date().toISOString(),
                           });
 
-                          // Trigger immediately on host screen
                           await triggerWinnerPopup(realChampion.id);
                         }
                       } catch (err) {
                         console.error("Error broadcasting winner:", err);
                       }
                     }}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-serif font-black rounded-xl text-sm transition shadow-lg shadow-amber-500/30"
+                    className="flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-amber-500 via-rose-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-serif font-black rounded-xl text-sm transition shadow-[0_0_25px_rgba(244,63,94,0.45)] cursor-pointer"
                   >
-                    <Trophy className="w-4 h-4" /> Announce The Winner
+                    <Trophy className="w-4 h-4 text-slate-950" /> Announce The
+                    Winner
                   </motion.button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
                 {teams.map((t: Team) => (
                   <div
                     key={t.id}
-                    className="bg-slate-950/80 border border-slate-800 p-4 rounded-2xl"
+                    className="bg-[#080d1a]/90 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-bold text-sm text-slate-200">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-bold text-sm text-slate-100 truncate pr-2">
                         {t.name}
                       </h4>
-                      <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                        {t.score} pts
+                      <span className="text-[11px] font-mono font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 whitespace-nowrap">
+                        {t.score > 0 ? `${t.score} pts` : "pts"}
                       </span>
                     </div>
-                    <div className="text-xs text-slate-400 mb-1 font-mono">
-                      Current Stage:{" "}
-                      <span className="text-emerald-400 font-bold">
-                        Round {t.currentRound} / 7
-                      </span>
-                    </div>
-                    <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
-                      <div
-                        className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-500"
-                        style={{ width: `${(t.currentRound / 7) * 100}%` }}
-                      />
+
+                    <div>
+                      <div className="text-[11px] text-slate-400 mb-2 font-mono flex items-center justify-between">
+                        <span>Current Stage:</span>
+                        <span className="text-emerald-400 font-bold">
+                          Round {t.currentRound} / 7
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+                        <div
+                          className="bg-gradient-to-r from-emerald-500 via-emerald-400 to-amber-400 h-full transition-all duration-500"
+                          style={{
+                            width: `${Math.max(8, (t.currentRound / 7) * 100)}%`,
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1200,7 +1084,7 @@ export default function ChamberOfCodesArena() {
 
           {currentUser.role === "TEAM" && activeTeam && (
             <div className="space-y-8">
-              <div className="bg-slate-900/80 border border-amber-500/30 rounded-3xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
+              <div className="bg-[#0b1325]/85 border border-amber-500/30 rounded-3xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center font-serif text-3xl font-black text-slate-950 shadow-xl shrink-0">
                   {currentRoundConfig.character[0]}
                 </div>
@@ -1228,7 +1112,7 @@ export default function ChamberOfCodesArena() {
                     Gateway Doors!"
                   </p>
                 </div>
-                <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-center min-w-[140px]">
+                <div className="bg-[#080d1a]/90 border border-slate-800 rounded-2xl p-4 text-center min-w-[140px]">
                   <div className="text-xs font-mono text-slate-500">
                     Squad Score
                   </div>
@@ -1238,7 +1122,7 @@ export default function ChamberOfCodesArena() {
                 </div>
               </div>
 
-              <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 shadow-xl backdrop-blur-md">
+              <div className="bg-[#0b1325]/70 border border-slate-800/80 rounded-3xl p-6 shadow-xl backdrop-blur-md">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-serif font-bold text-lg text-amber-300">
@@ -1268,12 +1152,13 @@ export default function ChamberOfCodesArena() {
                             setActiveQuestion(q);
                             setSelectedOption("");
                             setShowHint(false);
+                            setIsSubmitting(false);
                           }
                         }}
                         className={`aspect-square rounded-2xl border flex flex-col items-center justify-center p-3 text-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
                           isSolved
                             ? "bg-emerald-950/30 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                            : "bg-slate-950/80 border-slate-800 hover:border-amber-400/60 hover:bg-slate-900"
+                            : "bg-[#080d1a]/90 border-slate-800 hover:border-amber-400/60 hover:bg-slate-900"
                         }`}
                       >
                         {isSolved ? (
@@ -1302,7 +1187,7 @@ export default function ChamberOfCodesArena() {
                 </div>
               </div>
 
-              <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 shadow-xl backdrop-blur-md">
+              <div className="bg-[#0b1325]/70 border border-slate-800/80 rounded-3xl p-6 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-800 gap-4 mb-6">
                   <div>
                     <h3 className="font-serif font-bold text-lg text-amber-300 flex items-center gap-2">
@@ -1321,7 +1206,7 @@ export default function ChamberOfCodesArena() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={verifyPuzzleSolution}
-                      className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-serif font-bold rounded-xl text-sm transition shadow-lg shadow-amber-500/20"
+                      className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-serif font-bold rounded-xl text-sm transition shadow-lg shadow-amber-500/20 cursor-pointer"
                     >
                       Verify Puzzle Placement
                     </motion.button>
@@ -1329,7 +1214,7 @@ export default function ChamberOfCodesArena() {
                 </div>
 
                 {isRoundQuestionsComplete ? (
-                  <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto aspect-[3/2] bg-slate-950 p-3 rounded-2xl border border-amber-500/40 shadow-2xl relative">
+                  <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto aspect-[3/2] bg-[#050811] p-3 rounded-2xl border border-amber-500/40 shadow-2xl relative">
                     {puzzleOrder.map((pieceIndex, gridPosition) => {
                       const col = pieceIndex % 3;
                       const row = Math.floor(pieceIndex / 3);
@@ -1371,7 +1256,7 @@ export default function ChamberOfCodesArena() {
                     })}
                   </div>
                 ) : (
-                  <div className="py-12 text-center bg-slate-950/40 rounded-2xl border border-dashed border-slate-800">
+                  <div className="py-12 text-center bg-[#050811]/60 rounded-2xl border border-dashed border-slate-800">
                     <Lock className="w-10 h-10 text-slate-600 mx-auto mb-2" />
                     <p className="text-sm font-mono text-slate-400">
                       Answer {6 - solvedRoundQuestions.length} more questions to
@@ -1404,7 +1289,7 @@ export default function ChamberOfCodesArena() {
                       onDragStart={(e) =>
                         e.dataTransfer.setData("text/plain", "potion")
                       }
-                      className="cursor-grab active:cursor-grabbing p-6 bg-slate-950/80 border-2 border-amber-400/80 rounded-3xl shadow-2xl hover:scale-105 transition-all"
+                      className="cursor-grab active:cursor-grabbing p-6 bg-[#050811]/90 border-2 border-amber-400/80 rounded-3xl shadow-2xl hover:scale-105 transition-all"
                     >
                       <PotionBottle
                         potion={currentRoundConfig.potion}
@@ -1428,7 +1313,7 @@ export default function ChamberOfCodesArena() {
                       className={`text-center p-8 rounded-3xl border-4 border-dashed transition-all duration-300 min-w-[280px] ${
                         dragOverCauldron
                           ? "border-yellow-300 bg-amber-500/30 scale-105 shadow-[0_0_60px_rgba(251,191,36,0.8)]"
-                          : "border-amber-400/50 bg-slate-950/80"
+                          : "border-amber-400/50 bg-[#050811]/90"
                       }`}
                     >
                       <div className="text-6xl mb-3 animate-pulse">🚪🌅</div>
@@ -1444,95 +1329,6 @@ export default function ChamberOfCodesArena() {
                   </div>
                 </motion.div>
               )}
-
-              <div className="bg-slate-900/70 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-md">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
-                  <div>
-                    <h3 className="text-xl font-serif font-bold text-amber-300 flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-amber-400" /> Chamber
-                      Leaderboard
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Live standings of Hogwarts squads
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/40 px-3 py-1 rounded-full">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Live
-                    Synchronized
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm font-mono">
-                    <thead>
-                      <tr className="border-b border-slate-800 text-xs text-slate-500 uppercase">
-                        <th className="py-3 px-4">Rank</th>
-                        <th className="py-3 px-4">House Squad</th>
-                        <th className="py-3 px-4">Palace Progress</th>
-                        <th className="py-3 px-4">Points</th>
-                        <th className="py-3 px-4">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/60">
-                      {[...teams]
-                        .sort(
-                          (a, b) =>
-                            b.score - a.score ||
-                            b.currentRound - a.currentRound,
-                        )
-                        .map((team, index) => (
-                          <tr
-                            key={team.id}
-                            className={`hover:bg-slate-800/30 transition ${
-                              currentUser?.teamId === team.id
-                                ? "bg-amber-500/10"
-                                : ""
-                            }`}
-                          >
-                            <td className="py-4 px-4 font-bold flex items-center gap-2">
-                              {index === 0 && (
-                                <Crown className="w-4 h-4 text-amber-400" />
-                              )}
-                              {index === 1 && (
-                                <span className="text-slate-300">2</span>
-                              )}
-                              {index === 2 && (
-                                <span className="text-amber-600">3</span>
-                              )}
-                              {index > 2 && index + 1}
-                            </td>
-                            <td className="py-4 px-4 font-sans font-medium text-slate-200">
-                              {team.name}
-                              {currentUser?.teamId === team.id && (
-                                <span className="ml-2 text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded border border-amber-500/30">
-                                  Your Squad
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-4 px-4 text-emerald-400 font-bold">
-                              Round {team.currentRound} / 7
-                            </td>
-                            <td className="py-4 px-4 font-bold text-amber-400">
-                              {team.score} pts
-                            </td>
-                            <td className="py-4 px-4">
-                              {team.currentRound === 7 ? (
-                                <span className="inline-flex items-center gap-1 text-xs text-purple-400">
-                                  <Sparkles className="w-3.5 h-3.5" /> Final
-                                  Trial
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 text-xs text-amber-500">
-                                  <Play className="w-3.5 h-3.5" /> Battling
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
           )}
         </main>
@@ -1550,7 +1346,7 @@ export default function ChamberOfCodesArena() {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-900 border border-amber-500/40 max-w-lg w-full rounded-3xl p-6 shadow-2xl relative"
+              className="bg-[#0b1325] border border-amber-500/40 max-w-lg w-full rounded-3xl p-6 shadow-2xl relative"
             >
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-mono uppercase bg-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded border border-amber-500/30">
@@ -1562,8 +1358,9 @@ export default function ChamberOfCodesArena() {
                     setActiveQuestion(null);
                     setShowHint(false);
                     setSelectedOption("");
+                    setIsSubmitting(false);
                   }}
-                  className="text-slate-400 hover:text-slate-200 text-sm"
+                  className="text-slate-400 hover:text-slate-200 text-sm cursor-pointer"
                 >
                   ✕
                 </button>
@@ -1576,8 +1373,8 @@ export default function ChamberOfCodesArena() {
 
                 <button
                   type="button"
-                  onClick={() => setShowHint((prev) => !prev)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono transition border ${
+                  onClick={handleTriggerHint}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono transition border cursor-pointer ${
                     showHint
                       ? "bg-amber-500/20 border-amber-400 text-amber-300"
                       : "bg-slate-800/80 border-slate-700 text-slate-400 hover:border-amber-500/50 hover:text-amber-400"
@@ -1586,7 +1383,7 @@ export default function ChamberOfCodesArena() {
                   <Lightbulb
                     className={`w-3.5 h-3.5 ${showHint ? "text-amber-400 animate-pulse" : ""}`}
                   />
-                  {showHint ? "Conceal Hint" : "Cast Lumos Hint"}
+                  {showHint ? "Conceal Hint" : "Lumos Hint (-1 pt)"}
                 </button>
               </div>
 
@@ -1595,7 +1392,7 @@ export default function ChamberOfCodesArena() {
               </p>
 
               {activeQuestion.codeSnippet && (
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-amber-300 mb-4 overflow-x-auto">
+                <div className="bg-[#050811] p-3 rounded-xl border border-slate-800 font-mono text-xs text-amber-300 mb-4 overflow-x-auto">
                   <pre>{activeQuestion.codeSnippet}</pre>
                 </div>
               )}
@@ -1631,11 +1428,12 @@ export default function ChamberOfCodesArena() {
                     <button
                       key={opt.key}
                       type="button"
+                      disabled={isSubmitting}
                       onClick={() => setSelectedOption(opt.key)}
-                      className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                      className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
                         selectedOption === opt.key
                           ? "border-amber-400 bg-amber-500/20 text-amber-200 shadow-md shadow-amber-500/10"
-                          : "border-slate-800 bg-slate-950 hover:border-slate-700 text-slate-300 hover:bg-slate-900"
+                          : "border-slate-800 bg-[#050811] hover:border-slate-700 text-slate-300 hover:bg-slate-900"
                       }`}
                     >
                       <span
@@ -1663,23 +1461,27 @@ export default function ChamberOfCodesArena() {
                   <div className="flex gap-2">
                     <button
                       type="button"
+                      disabled={isSubmitting}
                       onClick={() => {
                         setActiveQuestion(null);
                         setSelectedOption("");
                         setShowHint(false);
+                        setIsSubmitting(false);
                       }}
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition"
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition disabled:opacity-40 cursor-pointer"
                     >
                       Retreat
                     </button>
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                      whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                       type="submit"
-                      disabled={!selectedOption}
-                      className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-serif font-bold rounded-xl text-xs transition shadow-lg shadow-amber-500/20 disabled:opacity-40"
+                      disabled={!selectedOption || isSubmitting}
+                      className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-serif font-bold rounded-xl text-xs transition shadow-lg shadow-amber-500/20 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
                     >
-                      Lock Choice (Submit)
+                      {isSubmitting
+                        ? "Locking Choice..."
+                        : "Lock Choice (Submit)"}
                     </motion.button>
                   </div>
                 </div>
@@ -1689,9 +1491,9 @@ export default function ChamberOfCodesArena() {
         )}
       </AnimatePresence>
 
-      <footer className="border-t border-slate-900 bg-slate-950/80 px-6 py-4 text-center text-xs text-slate-500 font-mono relative z-10">
+      <footer className="border-t border-slate-900/80 bg-[#070b14]/80 px-6 py-4 text-center text-xs text-slate-500 font-mono relative z-10">
         Department of Computer Science & Engineering • K.S.R. College of
-        Engineering (Autonomous), Tiruchengode
+        Engineering, Tiruchengode
       </footer>
     </div>
   );
